@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Pause, Play } from 'lucide-react';
 import type { RasaId } from '../types';
 import './shell.css';
@@ -11,6 +11,25 @@ const RASA_NAMES: Record<RasaId, string> = {
   katu: 'Katu · pungent',
   tikta: 'Tikta · bitter',
   kashaya: 'Kashaya · astringent',
+};
+
+const AMBIENT_INGREDIENTS = [
+  ['jaggery', 6, -4, 20, 13, 12], ['mango', 14, -14, 24, -10, 14],
+  ['salt', 23, -8, 19, 9, 9], ['chilli', 32, -19, 27, -14, 15],
+  ['neem', 42, -11, 23, 12, 13], ['jamun', 53, -24, 28, -9, 11],
+  ['mango', 64, -6, 22, 14, 12], ['jaggery', 75, -17, 26, -11, 10],
+  ['chilli', 86, -10, 21, 13, 14], ['salt', 95, -22, 29, -12, 8],
+  ['neem', 10, -28, 30, 10, 11], ['jamun', 28, -31, 25, -13, 9],
+  ['jaggery', 47, -35, 31, 14, 9], ['mango', 69, -29, 28, -10, 13],
+  ['salt', 82, -34, 32, 11, 8], ['chilli', 91, -39, 30, -14, 13],
+] as const;
+
+type IngredientStyle = CSSProperties & {
+  '--ingredient-x': string;
+  '--ingredient-delay': string;
+  '--ingredient-duration': string;
+  '--ingredient-wind': string;
+  '--ingredient-size': string;
 };
 
 export interface SiteShellProps {
@@ -42,6 +61,24 @@ export default function SiteShell({
       <a className="shell-skip" href="#rasa-map">
         Skip to the tongue map
       </a>
+
+      <div className="shell-ingredient-wind" aria-hidden="true">
+        {AMBIENT_INGREDIENTS.map(([kind, x, delay, duration, wind, size], index) => (
+          <span
+            key={`${kind}-${index}`}
+            data-ingredient={kind}
+            style={{
+              '--ingredient-x': `${x}%`,
+              '--ingredient-delay': `${delay}s`,
+              '--ingredient-duration': `${duration}s`,
+              '--ingredient-wind': `${wind}vw`,
+              '--ingredient-size': `${size}px`,
+            } as IngredientStyle}
+          >
+            <i />
+          </span>
+        ))}
+      </div>
 
       <header className="shell-header">
         <a className="shell-brand" href="#top" aria-label="Rasa, back to the beginning">
@@ -77,20 +114,17 @@ export default function SiteShell({
             <span className="shell-cloud shell-cloud--one" />
             <span className="shell-cloud shell-cloud--two" />
             <span className="shell-cloud shell-cloud--three" />
-            <div className="shell-cosmos">
-              <span className="shell-cosmos-orbit shell-cosmos-orbit--outer" />
-              <span className="shell-cosmos-orbit shell-cosmos-orbit--inner" />
-              <div className="shell-dabba">
-                <span className="shell-dabba-core" />
-                <span className="shell-spice-bowl shell-spice-bowl--madhura"><i /></span>
-                <span className="shell-spice-bowl shell-spice-bowl--amla"><i /></span>
-                <span className="shell-spice-bowl shell-spice-bowl--lavana"><i /></span>
-                <span className="shell-spice-bowl shell-spice-bowl--katu"><i /></span>
-                <span className="shell-spice-bowl shell-spice-bowl--tikta"><i /></span>
-                <span className="shell-spice-bowl shell-spice-bowl--kashaya"><i /></span>
+            <div className="shell-rasa-flower">
+              <div className="shell-rasa-flower__wheel">
+                <span data-rasa="madhura" />
+                <span data-rasa="amla" />
+                <span data-rasa="lavana" />
+                <span data-rasa="katu" />
+                <span data-rasa="tikta" />
+                <span data-rasa="kashaya" />
+                <strong lang="sa">रस</strong>
               </div>
-              <span className="shell-spice-moon shell-spice-moon--one" />
-              <span className="shell-spice-moon shell-spice-moon--two" />
+              <p><span lang="sa">षड्रस</span> · six tastes, one table</p>
             </div>
             <span className="shell-ridge shell-ridge--far" />
             <span className="shell-ridge shell-ridge--mid" />

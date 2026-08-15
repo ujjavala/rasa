@@ -6,16 +6,20 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  Flame,
   History,
   MapPin,
   MapPinned,
   Navigation,
   PartyPopper,
   Route,
+  Snowflake,
   Sparkles,
   UtensilsCrossed,
+  Wind,
 } from 'lucide-react';
 import { dishes, festivals, rasas, regions, spices } from '../data';
+import { SERVING_LABELS, servingTemperature } from '../data/serving';
 import type { Dish, Festival, Rasa, RasaId, Region, RegionId, Spice } from '../types';
 import DishPlate from './DishPlate';
 import './explore.css';
@@ -47,6 +51,13 @@ const LANGUAGE_TAGS: Record<string, string> = {
   'Nagpuri/Hindi': 'sck', Nepali: 'ne', Nyishi: 'njz', Odia: 'or', Punjabi: 'pa',
   Rajasthani: 'raj', Tamil: 'ta', Telugu: 'te', Tulu: 'tcy', Urdu: 'ur',
 };
+
+const SERVING_ICONS = {
+  'piping-hot': Flame,
+  warm: Flame,
+  cool: Wind,
+  chilled: Snowflake,
+} as const;
 
 const languageTag = (language: string) => LANGUAGE_TAGS[language] ?? 'und';
 
@@ -186,6 +197,9 @@ function DishStorybook({
 
   if (!current) return null;
 
+  const serving = servingTemperature(current);
+  const ServingIcon = SERVING_ICONS[serving];
+
   const goTo = (nextPage: number) => {
     setDirection(nextPage > page ? 'next' : 'previous');
     setPage(nextPage);
@@ -197,7 +211,13 @@ function DishStorybook({
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         Page {page + 1} of {entries.length}: {current.name}, {current.origin}
       </p>
-      <div className="ep-book" style={{ '--book-accent': current.plate.accent } as CSSVars}>
+      <div
+        className="ep-book"
+        data-serving={serving}
+        data-form={current.plate.form}
+        data-context={current.contexts.join(' ')}
+        style={{ '--book-accent': current.plate.accent } as CSSVars}
+      >
         <span className="ep-book-cover" aria-hidden="true" />
         <span className="ep-book-pages" aria-hidden="true" />
         <div className="ep-book-spread">
@@ -210,6 +230,10 @@ function DishStorybook({
             <button type="button" className="ep-book-place" onClick={() => onRegionSelect(current.region)}>
               <MapPin size={14} aria-hidden="true" /> {current.origin}
             </button>
+            <span className="ep-serving-badge">
+              <ServingIcon size={14} strokeWidth={1.8} aria-hidden="true" />
+              {SERVING_LABELS[serving]}
+            </span>
             <blockquote>{current.occasion ?? current.didYouKnow}</blockquote>
             <div className="ep-book-contexts" aria-label="Dish contexts">
               {current.contexts.map((context) => <span key={context}>{context}</span>)}
