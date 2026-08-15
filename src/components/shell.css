@@ -30,7 +30,7 @@
   position: absolute;
   top: -8vh;
   left: var(--ingredient-x);
-  width: clamp(16px, calc(var(--ingredient-size) + 8px), 24px);
+  width: clamp(13px, calc(var(--ingredient-size) + 4px), 20px);
   aspect-ratio: 1;
   opacity: 0;
   filter:
@@ -123,10 +123,10 @@
 
 @keyframes shell-ingredient-fall {
   0% { opacity: 0; transform: translate3d(0, -10vh, 0) rotate(0deg); }
-  8% { opacity: .62; }
-  42% { transform: translate3d(var(--ingredient-wind), 43vh, 0) rotate(190deg); }
-  78% { opacity: .48; }
-  100% { opacity: 0; transform: translate3d(calc(var(--ingredient-wind) * -.35), 112vh, 0) rotate(430deg); }
+  1% { opacity: .62; }
+  12% { transform: translate3d(var(--ingredient-wind), 43vh, 0) rotate(190deg); }
+  24% { opacity: .48; }
+  28%, 100% { opacity: 0; transform: translate3d(calc(var(--ingredient-wind) * -.35), 112vh, 0) rotate(430deg); }
 }
 
 .shell[data-motion='paused'] .shell-ingredient-wind > span { animation-play-state: paused; }
