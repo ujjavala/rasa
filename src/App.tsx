@@ -89,11 +89,11 @@ export default function App() {
             guideTravelling={isTravelling}
             onGuideAction={commandGuide}
           />
-          <div className="app-map-legend" aria-label="Map instructions">
+          <aside className="app-map-legend" aria-label="Map instructions">
             <span><Footprints size={14} aria-hidden="true" /> Select a guide</span>
             <span><Map size={14} aria-hidden="true" /> Map zooms to the rasa</span>
             <span><BookOpen size={14} aria-hidden="true" /> Open field notes below</span>
-          </div>
+          </aside>
         </div>
 
         <aside className="app-guidebook">

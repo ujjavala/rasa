@@ -129,7 +129,7 @@ function DishCard({
       </p>
       <p className="ep-blurb">{dish.blurb}</p>
 
-      <div className="ep-tags" aria-label="Dish details">
+      <section className="ep-tags" aria-label="Dish details">
         <button type="button" className="ep-region-chip" onClick={() => onRegionSelect(dish.region)}>
           <MapPin size={12} aria-hidden="true" />
           {dish.origin}
@@ -137,7 +137,7 @@ function DishCard({
         {dish.secondaryRasa?.map((id) => (
           <span key={id}>{rasaName(id)}</span>
         ))}
-      </div>
+      </section>
 
       <button
         type="button"
@@ -223,6 +223,15 @@ function DishStorybook({
         <div className="ep-book-spread">
           <article className="ep-book-page ep-book-page--left">
             <span className="ep-book-stitch" aria-hidden="true" />
+            <button
+              type="button"
+              className="ep-page-corner ep-page-corner--previous"
+              onClick={() => goTo(page - 1)}
+              disabled={page === 0}
+              aria-label="Turn to previous dish"
+            >
+              <ChevronLeft size={20} aria-hidden="true" />
+            </button>
             <p className="ep-book-chapter">Field note · {String(page + 1).padStart(2, '0')}</p>
             <span className="ep-book-glyph" aria-hidden="true">{current.glyph}</span>
             <h3>{current.name}</h3>
@@ -235,9 +244,9 @@ function DishStorybook({
               {SERVING_LABELS[serving]}
             </span>
             <blockquote>{current.occasion ?? current.didYouKnow}</blockquote>
-            <div className="ep-book-contexts" aria-label="Dish contexts">
+            <section className="ep-book-contexts" aria-label="Dish contexts">
               {current.contexts.map((context) => <span key={context}>{context}</span>)}
-            </div>
+            </section>
             <p className="ep-book-folio">Rasa culinary field atlas</p>
           </article>
 
@@ -246,6 +255,15 @@ function DishStorybook({
             className="ep-book-page ep-book-page--right"
             data-turn={direction}
           >
+            <button
+              type="button"
+              className="ep-page-corner ep-page-corner--next"
+              onClick={() => goTo(page + 1)}
+              disabled={page === entries.length - 1}
+              aria-label="Turn to next dish"
+            >
+              <ChevronRight size={20} aria-hidden="true" />
+            </button>
             <DishCard
               dish={current}
               expanded={activeDish === current.id}

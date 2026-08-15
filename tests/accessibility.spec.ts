@@ -18,6 +18,16 @@ const AAA_TAGS = [
 async function expectNoAxeViolations(page: Page) {
   const results = await new AxeBuilder({ page }).withTags(AAA_TAGS).analyze();
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+
+  // Textured CSS backgrounds prevent axe from calculating some contrast pairs.
+  // Every other inconclusive result should be treated as an unresolved defect.
+  const unresolvedStructuralChecks = results.incomplete.filter(
+    ({ id }) => id !== 'color-contrast' && id !== 'color-contrast-enhanced',
+  );
+  expect(
+    unresolvedStructuralChecks,
+    JSON.stringify(unresolvedStructuralChecks, null, 2),
+  ).toEqual([]);
 }
 
 test('landing page passes automated WCAG AAA rules', async ({ page }) => {
@@ -119,4 +129,30 @@ test('manual motion control pauses decorative CSS animation', async ({ page }) =
   await page.getByRole('button', { name: /Pause motion/i }).click();
   await expect(page.locator('.shell')).toHaveAttribute('data-motion', 'paused');
   await expect(page.getByRole('button', { name: /Play motion/i })).toBeVisible();
+});
+
+test('CSS 3D tour supports keyboard orbit and centering', async ({ page }) => {
+  await page.goto('/');
+  const orbitSurface = page.getByRole('button', { name: /CSS 3D orbit surface/i });
+  await orbitSurface.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('.tm-root')).toHaveAttribute('data-orbit', 'set');
+  await page.getByRole('button', { name: /Center 3D view/i }).click();
+  await expect(page.locator('.tm-root')).toHaveAttribute('data-orbit', 'idle');
+});
+
+test('dish notebook corners turn forward and backward', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Madhura, sweet/i }).first().click();
+  const pageStatus = page.getByRole('status').filter({ hasText: /^Page \d+ of/ });
+  const nextCorner = page.getByRole('button', { name: /Turn to next dish/i });
+  const previousCorner = page.getByRole('button', { name: /Turn to previous dish/i });
+  await expect(previousCorner).toBeDisabled();
+  await nextCorner.click();
+  await expect(pageStatus).toContainText('Page 2 of');
+  await expect(previousCorner).toBeEnabled();
+  await previousCorner.focus();
+  await page.keyboard.press('Enter');
+  await expect(pageStatus).toContainText('Page 1 of');
+  await expect(previousCorner).toBeDisabled();
 });

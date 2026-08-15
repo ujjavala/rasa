@@ -117,7 +117,7 @@
   border: 1px solid transparent;
   border-radius: 10px;
   background: transparent;
-  color: rgb(247 236 224 / 0.56);
+  color: rgb(247 236 224 / 0.82);
   cursor: pointer;
   font: inherit;
   font-size: 0.73rem;
@@ -270,7 +270,7 @@
 
 .ep-native {
   margin: 5px 0 0;
-  color: var(--rasa-deep);
+  color: var(--rasa-ink);
   font-family: var(--font-deva);
   font-size: 0.8rem;
 }
@@ -302,7 +302,7 @@
   border: 1px solid #d5bfaa;
   border-radius: 99px;
   background: rgb(255 255 255 / 0.3);
-  color: #654e42;
+  color: #59463d;
   font: inherit;
   font-size: 0.63rem;
   font-weight: 700;
@@ -316,7 +316,7 @@ button.ep-place {
 button.ep-region-chip:hover,
 button.ep-place:hover {
   border-color: var(--rasa-deep);
-  color: var(--rasa-deep);
+  color: var(--rasa-ink);
 }
 
 .ep-expand {
@@ -364,7 +364,7 @@ button.ep-place:hover {
   align-items: center;
   gap: 7px;
   margin: 0 0 5px;
-  color: var(--rasa-deep);
+  color: var(--rasa-ink);
   font-size: 0.72rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -397,7 +397,7 @@ button.ep-place:hover {
   align-items: center;
   gap: 6px;
   margin-top: 16px;
-  color: var(--rasa-deep);
+  color: var(--rasa-ink);
   font-size: 0.69rem;
   font-weight: 800;
   text-underline-offset: 3px;
@@ -457,7 +457,7 @@ button.ep-place:hover {
   display: block;
   min-height: 2.8em;
   margin-bottom: 7px;
-  color: #826a5b;
+  color: #59463d;
   font-size: 0.59rem;
   font-weight: 750;
   letter-spacing: 0.07em;
@@ -485,7 +485,7 @@ button.ep-place:hover {
 .ep-region-action {
   display: block;
   margin-top: 15px;
-  color: #6d5548;
+  color: #59463d;
   font-size: 0.66rem;
   line-height: 1.4;
 }
@@ -494,7 +494,7 @@ button.ep-place:hover {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--rasa-deep);
+  color: var(--rasa-ink);
   font-weight: 800;
 }
 
@@ -512,7 +512,7 @@ button.ep-place:hover {
 
 .ep-note-card .ep-card-kicker {
   max-width: calc(100% - 35px);
-  color: var(--rasa-deep);
+  color: var(--rasa-ink);
 }
 
 .ep-place {
@@ -852,6 +852,125 @@ button.ep-place:hover {
   animation: ep-turn-previous 680ms var(--ease-out-expo) both;
 }
 
+/* Clickable outer corners: small rounded curls lift inward from the page edge. */
+.ep-page-corner {
+  position: absolute;
+  z-index: 24;
+  bottom: 0;
+  width: clamp(48px, 5vw, 60px);
+  height: clamp(48px, 5vw, 60px);
+  display: grid;
+  place-items: end;
+  padding: 0 7px 7px;
+  border: 0;
+  color: #704729;
+  background: transparent;
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.ep-page-corner::before,
+.ep-page-corner::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  content: '';
+  transform-origin: 100% 100%;
+  transition: transform 280ms var(--ease-spring), filter 280ms ease;
+}
+
+.ep-page-corner::before {
+  z-index: -2;
+  width: 34px;
+  height: 22px;
+  border-radius: 100% 0 0;
+  background: rgb(65 34 19 / .28);
+  filter: blur(2.5px);
+  transform: translate(-2px, -2px) rotate(-2deg);
+}
+
+.ep-page-corner::after {
+  z-index: -1;
+  width: 32px;
+  height: 21px;
+  border-radius: 100% 0 0;
+  background:
+    radial-gradient(ellipse at 80% 88%, rgb(255 255 255 / .8), transparent 30%),
+    linear-gradient(145deg, #d2b17b 0, #fff4d2 48%, #f8e7bd 72%, #b88f5d 100%);
+  box-shadow: inset 1px 1px rgb(255 255 255 / .65);
+  filter: drop-shadow(-2px -2px 1px rgb(67 38 22 / .16));
+  transform: translate(-1px, -2px) rotate(-3deg);
+}
+
+.ep-page-corner svg {
+  z-index: 2;
+  filter: drop-shadow(0 1px rgb(255 255 255 / .55));
+  transition: transform 220ms var(--ease-spring);
+}
+
+.ep-page-corner--previous {
+  left: 0;
+  place-items: end start;
+  padding-right: 0;
+  padding-left: 10px;
+}
+
+.ep-page-corner--next { right: 0; }
+
+.ep-page-corner--previous::before,
+.ep-page-corner--previous::after {
+  right: auto;
+  left: 0;
+  border-radius: 0 100% 0 0;
+  transform-origin: 0 100%;
+}
+
+.ep-page-corner--previous::before {
+  background: rgb(65 34 19 / .28);
+  transform: translate(2px, -2px) rotate(2deg);
+}
+
+.ep-page-corner--previous::after {
+  background:
+    radial-gradient(ellipse at 20% 88%, rgb(255 255 255 / .8), transparent 30%),
+    linear-gradient(215deg, #d2b17b 0, #fff4d2 48%, #f8e7bd 72%, #b88f5d 100%);
+  filter: drop-shadow(2px -2px 1px rgb(67 38 22 / .16));
+  transform: translate(1px, -2px) rotate(3deg);
+}
+
+.ep-page-corner:hover:not(:disabled)::before,
+.ep-page-corner:focus-visible::before {
+  filter: blur(2.5px) brightness(.9);
+  transform: translate(-5px, -5px) rotate(-4deg) scale(1.03);
+}
+
+.ep-page-corner:hover:not(:disabled)::after,
+.ep-page-corner:focus-visible::after {
+  transform: translate(-4px, -5px) rotate(-7deg) scale(1.04);
+}
+
+.ep-page-corner--previous:hover:not(:disabled)::before,
+.ep-page-corner--previous:focus-visible::before {
+  transform: translate(5px, -5px) rotate(4deg) scale(1.03);
+}
+
+.ep-page-corner--previous:hover:not(:disabled)::after,
+.ep-page-corner--previous:focus-visible::after {
+  transform: translate(4px, -5px) rotate(7deg) scale(1.04);
+}
+
+.ep-page-corner--next:hover:not(:disabled) svg,
+.ep-page-corner--next:focus-visible svg { transform: translateX(4px); }
+.ep-page-corner--previous:hover:not(:disabled) svg,
+.ep-page-corner--previous:focus-visible svg { transform: translateX(-4px); }
+
+.ep-page-corner:disabled {
+  opacity: .22;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
 .ep-book-spine {
   position: absolute;
   z-index: 8;
@@ -878,7 +997,7 @@ button.ep-place:hover {
 
 .ep-book-chapter {
   margin: 0 0 1.5rem;
-  color: #864b2d;
+  color: #6f3922;
   font-size: 0.67rem;
   font-weight: 900;
   letter-spacing: 0.17em;
@@ -903,7 +1022,7 @@ button.ep-place:hover {
 
 .ep-book-native {
   margin: 0.8rem 0 1.2rem;
-  color: #9b3d2e;
+  color: #762b22;
   font: 1.15rem var(--font-deva);
 }
 
@@ -1043,7 +1162,7 @@ button.ep-place:hover {
   bottom: 18px;
   left: 50%;
   margin: 0;
-  color: #82654c;
+  color: #59402d;
   font: 700 0.6rem var(--font-sans);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1166,12 +1285,15 @@ button.ep-place:hover {
   .ep-book-controls label { grid-column: 1 / -1; grid-row: 1; }
   .ep-serving-badge { margin: 0.5rem 0 0; }
   .ep-book-page--left::before { width: 72px; opacity: 0.28; }
+  .ep-page-corner { width: 52px; height: 52px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ep-book,
   .ep-book::before,
   .ep-book-page--right,
+  .ep-page-corner::before,
+  .ep-page-corner::after,
   .ep-book[data-serving='piping-hot'] .ep-book-page--right::before {
     animation: none;
     transform: none;

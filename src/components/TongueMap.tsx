@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { BookOpen, Locate, MessageCircle, Minimize2, Search } from 'lucide-react';
+import { BookOpen, Locate, MessageCircle, Minimize2, RotateCcw, Search } from 'lucide-react';
 import { rasas } from '../data';
 import { EXPLORERS } from '../data/explorers';
 import type { Rasa, RasaId } from '../types';
@@ -96,7 +96,9 @@ function buildNubs(seed: number, count: number, spread: number, minS: number, ma
   return out;
 }
 
-const CLAMP_TILT = 10;
+const HOVER_TILT = 7;
+const ORBIT_X_LIMIT = 18;
+const ORBIT_Y_LIMIT = 24;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 type Direction = 'left' | 'right' | 'up' | 'down';
@@ -118,6 +120,19 @@ export default function TongueMap({
   const rootRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   const pointerRef = useRef({ x: 0.5, y: 0.4 });
+  const orbitRef = useRef({
+    active: false,
+    dragging: false,
+    moved: false,
+    pointerId: -1,
+    rx: 0,
+    ry: 0,
+    startX: 0,
+    startY: 0,
+    startRx: 0,
+    startRy: 0,
+  });
+  const suppressBackdropClickRef = useRef(false);
   const buttonsRef = useRef(new Map<RasaId, HTMLButtonElement>());
 
   /* Tab order follows the tongue top-to-bottom, left-to-right. */
@@ -172,8 +187,48 @@ export default function TongueMap({
   const tx = 50 - cx * zoom;
   const ty = 50 - cy * zoom;
 
-  /* ---- Pointer parallax: rAF-throttled, written straight to the
-          DOM as custom properties. Never touches React state. ------- */
+  const paintOrbit = useCallback((rx: number, ry: number, active: boolean) => {
+    const tilt = tiltRef.current;
+    const root = rootRef.current;
+    if (!tilt || !root) return;
+    tilt.style.setProperty('--tm-rx', `${rx.toFixed(2)}deg`);
+    tilt.style.setProperty('--tm-ry', `${ry.toFixed(2)}deg`);
+    root.style.setProperty('--tm-orbit-depth', active ? '1' : '.35');
+    root.dataset.orbit = active ? 'set' : 'idle';
+  }, []);
+
+  const resetOrbit = useCallback(() => {
+    const orbit = orbitRef.current;
+    orbit.active = false;
+    orbit.dragging = false;
+    orbit.rx = 0;
+    orbit.ry = 0;
+    pointerRef.current = { x: 0.5, y: 0.4 };
+    paintOrbit(0, 0, false);
+  }, [paintOrbit]);
+
+  const adjustOrbit = useCallback((deltaRx: number, deltaRy: number) => {
+    const orbit = orbitRef.current;
+    orbit.active = true;
+    orbit.rx = clamp(orbit.rx + deltaRx, -ORBIT_X_LIMIT, ORBIT_X_LIMIT);
+    orbit.ry = clamp(orbit.ry + deltaRy, -ORBIT_Y_LIMIT, ORBIT_Y_LIMIT);
+    paintOrbit(orbit.rx, orbit.ry, true);
+  }, [paintOrbit]);
+
+  const onViewportKeyDown = useCallback((event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if (event.target !== event.currentTarget) return;
+    const step = event.shiftKey ? 6 : 3;
+    if (event.key === 'ArrowLeft') adjustOrbit(0, -step);
+    else if (event.key === 'ArrowRight') adjustOrbit(0, step);
+    else if (event.key === 'ArrowUp') adjustOrbit(-step, 0);
+    else if (event.key === 'ArrowDown') adjustOrbit(step, 0);
+    else if (event.key === 'Home') resetOrbit();
+    else return;
+    event.preventDefault();
+  }, [adjustOrbit, resetOrbit]);
+
+  /* ---- CSS 3D tour: rAF-throttled drag orbit with lightweight hover
+          parallax. React state is not touched during pointer movement. --- */
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
@@ -187,8 +242,9 @@ export default function TongueMap({
       const root = rootRef.current;
       if (!tilt || !root) return;
       const { x, y } = pointerRef.current;
-      const ry = clamp((x - 0.5) * 2, -1, 1) * CLAMP_TILT;
-      const rx = clamp((0.5 - y) * 2, -1, 1) * CLAMP_TILT;
+      const orbit = orbitRef.current;
+      const ry = orbit.active ? orbit.ry : clamp((x - 0.5) * 2, -1, 1) * HOVER_TILT;
+      const rx = orbit.active ? orbit.rx : clamp((0.5 - y) * 2, -1, 1) * HOVER_TILT;
       tilt.style.setProperty('--tm-rx', `${rx.toFixed(2)}deg`);
       tilt.style.setProperty('--tm-ry', `${ry.toFixed(2)}deg`);
       /* the wet highlight chases the cursor across the dorsum */
@@ -206,18 +262,61 @@ export default function TongueMap({
         x: (e.clientX - rect.left) / rect.width,
         y: (e.clientY - rect.top) / rect.height,
       };
+      const orbit = orbitRef.current;
+      if (orbit.dragging && e.pointerId === orbit.pointerId) {
+        const dx = (e.clientX - orbit.startX) / rect.width;
+        const dy = (e.clientY - orbit.startY) / rect.height;
+        orbit.moved ||= Math.abs(dx) + Math.abs(dy) > 0.008;
+        orbit.rx = clamp(orbit.startRx - dy * 52, -ORBIT_X_LIMIT, ORBIT_X_LIMIT);
+        orbit.ry = clamp(orbit.startRy + dx * 64, -ORBIT_Y_LIMIT, ORBIT_Y_LIMIT);
+      }
       schedule();
     };
 
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Element;
+      const otherControl = target.closest('a, input, select')
+        || (target.closest('button') && !target.closest('.tm-backdrop'));
+      if (!e.isPrimary || e.button !== 0 || otherControl) return;
+      const orbit = orbitRef.current;
+      orbit.active = true;
+      orbit.dragging = true;
+      orbit.moved = false;
+      orbit.pointerId = e.pointerId;
+      orbit.startX = e.clientX;
+      orbit.startY = e.clientY;
+      orbit.startRx = orbit.rx;
+      orbit.startRy = orbit.ry;
+      rootRef.current!.dataset.orbit = 'dragging';
+      viewport.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    };
+
+    const onUp = (e: PointerEvent) => {
+      const orbit = orbitRef.current;
+      if (!orbit.dragging || e.pointerId !== orbit.pointerId) return;
+      orbit.dragging = false;
+      suppressBackdropClickRef.current = orbit.moved;
+      rootRef.current!.dataset.orbit = 'set';
+      if (viewport.hasPointerCapture(e.pointerId)) viewport.releasePointerCapture(e.pointerId);
+    };
+
     const onLeave = () => {
+      if (orbitRef.current.active) return;
       pointerRef.current = { x: 0.5, y: 0.4 };
       schedule();
     };
 
+    viewport.addEventListener('pointerdown', onDown);
     viewport.addEventListener('pointermove', onMove);
+    viewport.addEventListener('pointerup', onUp);
+    viewport.addEventListener('pointercancel', onUp);
     viewport.addEventListener('pointerleave', onLeave);
     return () => {
+      viewport.removeEventListener('pointerdown', onDown);
       viewport.removeEventListener('pointermove', onMove);
+      viewport.removeEventListener('pointerup', onUp);
+      viewport.removeEventListener('pointercancel', onUp);
       viewport.removeEventListener('pointerleave', onLeave);
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
@@ -298,6 +397,10 @@ export default function TongueMap({
 
   /* Clicking empty mouth resets to the overview. */
   const onBackdrop = useCallback(() => {
+    if (suppressBackdropClickRef.current) {
+      suppressBackdropClickRef.current = false;
+      return;
+    }
     if (activeRasa) onSelect(null);
   }, [activeRasa, onSelect]);
 
@@ -315,7 +418,8 @@ export default function TongueMap({
       <p className="sr-only" id="tm-intro">
         An interactive illustration of a tongue with six regions, one for each rasa of Ayurveda.
         Choose a region to zoom the map into it. Press Escape to return to the overview. Use the
-        arrow keys to move between neighbouring regions.
+        arrow keys to move between neighbouring regions. Drag empty space to orbit the CSS 3D
+        scene. When the 3D tour frame is focused, use arrow keys to orbit and Home to centre it.
       </p>
       <ul className="sr-only">
         {ordered.map((r) => (
@@ -334,9 +438,9 @@ export default function TongueMap({
         <button
           type="button"
           className="tm-backdrop"
-          tabIndex={-1}
-          aria-hidden="true"
+          aria-label="CSS 3D orbit surface. Use arrow keys to orbit, Home to centre, or activate to reset map zoom."
           onClick={onBackdrop}
+          onKeyDown={onViewportKeyDown}
         />
         <div className="tm-frame">
           <div
@@ -507,6 +611,19 @@ export default function TongueMap({
           <button
             type="button"
             className="tm-btn glass"
+            aria-label="Center 3D view"
+            onClick={(event) => {
+              event.stopPropagation();
+              resetOrbit();
+            }}
+          >
+            <RotateCcw size={13} strokeWidth={1.75} aria-hidden="true" />
+            <span>Center 3D</span>
+          </button>
+          <button
+            type="button"
+            className="tm-btn glass"
+            aria-label="Reset map zoom"
             disabled={!active}
             onClick={(e) => {
               e.stopPropagation();
@@ -514,12 +631,12 @@ export default function TongueMap({
             }}
           >
             <Minimize2 size={13} strokeWidth={1.75} aria-hidden="true" />
-            Reset view
+            <span>Reset view</span>
           </button>
         </div>
 
         {active && (
-          <div className="tm-guide-console glass" aria-label={`${EXPLORERS[active.id].name} guide commands`}>
+          <section className="tm-guide-console glass" aria-label={`${EXPLORERS[active.id].name} guide commands`}>
             <span className="tm-guide-console__name">Command {EXPLORERS[active.id].name}</span>
             <button type="button" onClick={(event) => { event.stopPropagation(); onGuideAction('greet'); }}>
               <MessageCircle size={14} aria-hidden="true" /> Greet
@@ -533,7 +650,7 @@ export default function TongueMap({
             <span className="sr-only" role="status" aria-live="polite">
               {guideDialogue ?? EXPLORERS[active.id].greeting}
             </span>
-          </div>
+          </section>
         )}
       </div>
     </div>

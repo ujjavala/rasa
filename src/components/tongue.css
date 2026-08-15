@@ -24,6 +24,7 @@
   --tm-py: 30%; /* specular y      */
   --tm-tiltk: 1; /* tilt damping    */
   --tm-zoom: 1; /* current map zoom */
+  --tm-orbit-depth: .35; /* shallow hover to deliberate drag orbit */
   position: relative;
   width: 100%;
 }
@@ -46,8 +47,12 @@
     radial-gradient(ellipse 64% 62% at 50% 48%, rgb(115 38 55 / .2), transparent 73%),
     radial-gradient(circle at 50% 12%, rgb(240 168 48 / .08), transparent 34%),
     linear-gradient(160deg, #160b10, #0b070b 58%, #13090d);
-  cursor: crosshair;
+  cursor: grab;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
 }
+
+.tm-root[data-orbit='dragging'] .tm-viewport { cursor: grabbing; }
 
 /* Soft mouth-cavity walls closing in at the edges */
 .tm-cavity {
@@ -76,8 +81,15 @@
   cursor: inherit;
 }
 
-.tm-backdrop:focus {
+.tm-backdrop:focus:not(:focus-visible) {
   outline: none;
+}
+
+.tm-backdrop:focus-visible {
+  outline: 3px solid var(--color-brass);
+  outline-offset: -7px;
+  border-radius: 34px;
+  box-shadow: inset 0 0 0 3px rgb(11 5 7 / .72);
 }
 
 /* ------------------------------------------------------------
@@ -108,8 +120,9 @@
 .tm-stage {
   position: absolute;
   inset: 0;
-  perspective: 1400px;
+  perspective: 1100px;
   perspective-origin: 50% 45%;
+  transform-style: preserve-3d;
 }
 
 .tm-tilt {
@@ -118,9 +131,11 @@
   transform-style: preserve-3d;
   transform: rotateX(calc(var(--tm-rx) * var(--tm-tiltk)))
     rotateY(calc(var(--tm-ry) * var(--tm-tiltk)));
-  transition: transform 260ms ease-out;
+  transition: transform 420ms var(--ease-out-expo);
   will-change: transform;
 }
+
+.tm-root[data-orbit='dragging'] .tm-tilt { transition: none; }
 
 .tm-breath {
   position: absolute;
@@ -162,6 +177,13 @@
   );
   filter: blur(30px);
   pointer-events: none;
+  transition: filter 360ms ease, opacity 360ms ease;
+}
+
+.tm-root[data-orbit='set'] .tm-cast,
+.tm-root[data-orbit='dragging'] .tm-cast {
+  filter: blur(24px);
+  opacity: .88;
 }
 
 /* --- Stacked Z slabs give the body genuine volume ------------ */
@@ -414,6 +436,7 @@
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
+  translate: 0 0 calc(5px * var(--tm-orbit-depth));
 }
 
 .tm-zone {
@@ -657,6 +680,8 @@
   backdrop-filter: none;
 }
 
+.tm-hud--reset .tm-btn { min-width: 44px; min-height: 44px; }
+
 .tm-guide-console {
   position: absolute;
   z-index: 12;
@@ -783,4 +808,7 @@
   .tm-guide-console { right: 10px; left: 10px; justify-content: center; transform: none; }
   .tm-guide-console__name { display: none; }
   .tm-guide-console button { flex: 1; padding-inline: 6px; }
+  .tm-hud--reset { right: 8px; gap: 5px; }
+  .tm-hud--reset .tm-btn { width: 44px; justify-content: center; padding-inline: 0; }
+  .tm-hud--reset .tm-btn span { display: none; }
 }

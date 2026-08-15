@@ -26,6 +26,7 @@
   height: 51%;
   translate: -50% -50%;
   transform-origin: 50% 94%;
+  transform-style: preserve-3d;
   filter: drop-shadow(0 3px 1px rgb(35 11 16 / .35));
 }
 
@@ -41,10 +42,10 @@
   top: 72%;
   width: 25%;
   height: 6%;
-  translate: -50% -50%;
   border-radius: 50%;
   background: rgb(43 5 15 / .42);
   filter: blur(3px);
+  translate: -50% -50% calc(-10px * var(--tm-orbit-depth, .35));
 }
 
 .taste-guide__body {
@@ -58,6 +59,8 @@
     linear-gradient(108deg, rgb(255 255 255 / .38), transparent 26%),
     linear-gradient(150deg, var(--explorer-light), var(--explorer-color) 54%, var(--explorer-deep));
   box-shadow: inset -4px -4px 6px rgb(45 11 18 / .2), 0 4px 0 var(--explorer-deep);
+  translate: 0 0 calc(14px * var(--tm-orbit-depth, .35));
+  transform-style: preserve-3d;
 }
 
 .taste-guide__body::before {
@@ -90,6 +93,8 @@
   z-index: 5;
   inset: 43% 18% 15%;
   pointer-events: none;
+  translate: 0 0 calc(19px * var(--tm-orbit-depth, .35));
+  transform-style: preserve-3d;
 }
 
 .taste-guide__costume i {
@@ -108,6 +113,8 @@
     radial-gradient(circle at 32% 23%, rgb(255 255 255 / .5), transparent 13%),
     radial-gradient(circle at 48% 42%, var(--guide-skin-light), var(--guide-skin) 72%);
   box-shadow: inset -3px -3px 4px rgb(85 31 27 / .18), 0 3px 0 color-mix(in srgb, var(--guide-skin), black 28%);
+  translate: 0 0 calc(30px * var(--tm-orbit-depth, .35));
+  transform-style: preserve-3d;
 }
 
 .taste-guide__hair {
@@ -116,6 +123,7 @@
   border-radius: 55% 55% 35% 35%;
   background: linear-gradient(145deg, color-mix(in srgb, var(--guide-hair), white 18%), var(--guide-hair));
   box-shadow: inset 2px 2px rgb(255 255 255 / .13);
+  translate: 0 0 calc(3px * var(--tm-orbit-depth, .35));
 }
 
 .taste-guide__hair::after {
@@ -149,6 +157,7 @@
   border-radius: 50%;
   background: radial-gradient(circle at 30% 25%, white 0 16%, #2d1718 20% 100%);
   animation: taste-guide-blink 5.2s infinite;
+  translate: 0 0 calc(4px * var(--tm-orbit-depth, .35));
 }
 .taste-guide__eye--left { left: 25%; }
 .taste-guide__eye--right { right: 25%; }
@@ -186,6 +195,7 @@
   background: linear-gradient(90deg, var(--explorer-deep), var(--explorer-color));
   box-shadow: inset 2px 0 rgb(255 255 255 / .18);
   transform-origin: 50% 12%;
+  translate: 0 0 calc(22px * var(--tm-orbit-depth, .35));
 }
 .taste-guide__arm::after {
   position: absolute;
@@ -225,6 +235,7 @@
   height: 28%;
   border-radius: 0 0 30% 30%;
   background: linear-gradient(90deg, #39232a, #211217);
+  translate: 0 0 calc(6px * var(--tm-orbit-depth, .35));
 }
 .taste-guide__leg::after {
   position: absolute;
@@ -250,6 +261,7 @@
   border-radius: 50%;
   background: color-mix(in srgb, var(--explorer-light), #fff8df 52%);
   box-shadow: 0 3px 8px rgb(35 11 16 / .32), inset 0 1px #fff;
+  translate: 0 0 calc(38px * var(--tm-orbit-depth, .35));
 }
 .taste-guide__tool i { inset: 22%; }
 
@@ -286,20 +298,24 @@
   z-index: 7;
   top: 43%;
   left: 12%;
-  width: 28%;
-  aspect-ratio: 1.5;
-  border: 1px solid #543d2e;
-  border-radius: 50%;
-  box-shadow: 190% 0 0 -1px var(--guide-skin-light), 190% 0 0 0 #543d2e;
+  width: 76%;
+  height: 15%;
+  background: linear-gradient(#543d2e, #543d2e) 50% 48% / 27% 1px no-repeat;
 }
+.taste-guide[data-rasa='madhura'] .taste-guide__detail::before,
 .taste-guide[data-rasa='madhura'] .taste-guide__detail::after {
   position: absolute;
-  top: 46%;
-  left: 100%;
-  width: 90%;
-  border-top: 1px solid #543d2e;
+  top: 0;
+  width: 34%;
+  height: 100%;
+  border: 1px solid #543d2e;
+  border-radius: 50%;
+  background: rgb(255 244 216 / .18);
+  box-shadow: inset 1px 1px rgb(255 255 255 / .3);
   content: '';
 }
+.taste-guide[data-rasa='madhura'] .taste-guide__detail::before { left: 0; }
+.taste-guide[data-rasa='madhura'] .taste-guide__detail::after { right: 0; }
 .taste-guide[data-rasa='madhura'] .taste-guide__tool i {
   border: 2px solid #844e24;
   border-top: 0;
@@ -1110,15 +1126,16 @@
 
 .taste-guide:is([data-rasa='madhura'], [data-rasa='katu'], [data-rasa='tikta']) .taste-guide__hair-ribbon {
   z-index: 10;
-  top: -10%;
-  left: 42%;
-  width: 16%;
+  top: -6%;
+  left: 38%;
+  width: 24%;
   aspect-ratio: 1;
   display: block;
   border: 1px solid #8f3155;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 28%, #ffb5c9, #dc4f7d 72%);
   box-shadow: 0 1px #713047;
+  translate: 0 0 calc(12px * var(--tm-orbit-depth, .35));
 }
 
 .taste-guide:is([data-rasa='madhura'], [data-rasa='katu'], [data-rasa='tikta']) .taste-guide__hair-ribbon::before,
@@ -1143,8 +1160,8 @@
 }
 
 .taste-guide[data-rasa='madhura'] .taste-guide__hair-ribbon {
-  top: -4%;
-  right: 5%;
+  top: -11%;
+  right: 4%;
   left: auto;
   border-color: #23606b;
   background: radial-gradient(circle at 35% 28%, #c5fbf5, #36a6ae 72%);
@@ -1157,8 +1174,8 @@
 }
 
 .taste-guide[data-rasa='katu'] .taste-guide__hair-ribbon {
-  top: -3%;
-  right: 6%;
+  top: -8%;
+  right: 0;
   left: auto;
   border-color: #9a5712;
   background: radial-gradient(circle at 35% 28%, #fff2a8, #edae28 72%);
@@ -1168,6 +1185,13 @@
 .taste-guide[data-rasa='katu'] .taste-guide__hair-ribbon::after {
   border-color: #9a5712;
   background: linear-gradient(135deg, #ffd86a, #e68d1e);
+}
+
+.taste-guide[data-rasa='tikta'] .taste-guide__hair-ribbon {
+  top: -17%;
+  right: auto;
+  left: 36%;
+  width: 28%;
 }
 
 /* Keep the fellowship at one visual height; width and costume proportions
