@@ -1,0 +1,786 @@
+/* ============================================================
+   TONGUE MAP — pure-CSS anatomy
+   ------------------------------------------------------------
+   No images, no SVG, no canvas. Everything below is gradients,
+   border-radius, box-shadow and 3D transforms.
+
+   Layer stack (front of tongue = bottom of the screen):
+
+     .tm-viewport            clipping frame + HUD
+       .tm-frame             the tongue's bounding box, centred
+         .tm-camera          <- the map "camera": pan + zoom
+           .tm-stage         perspective
+             .tm-tilt        pointer parallax (rotateX/rotateY)
+               .tm-cast      ambient-occlusion shadow on the ground
+               .tm-breath    slow idle breathing
+                 .tm-tongue  the flesh, in stacked Z slabs
+               .tm-zones     the six rasa clusters (real buttons)
+   ============================================================ */
+
+.tm-root {
+  --tm-rx: 0deg; /* parallax pitch  */
+  --tm-ry: 0deg; /* parallax yaw    */
+  --tm-px: 50%; /* specular x      */
+  --tm-py: 30%; /* specular y      */
+  --tm-tiltk: 1; /* tilt damping    */
+  --tm-zoom: 1; /* current map zoom */
+  position: relative;
+  width: 100%;
+}
+
+/* ------------------------------------------------------------
+   Viewport — the clipping frame. Fixed aspect so the tongue
+   always fits, whatever the integrator wraps it in.
+   ------------------------------------------------------------ */
+.tm-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 10;
+  max-height: 86vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 34px;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 64% 62% at 50% 48%, rgb(115 38 55 / .2), transparent 73%),
+    radial-gradient(circle at 50% 12%, rgb(240 168 48 / .08), transparent 34%),
+    linear-gradient(160deg, #160b10, #0b070b 58%, #13090d);
+  cursor: crosshair;
+}
+
+/* Soft mouth-cavity walls closing in at the edges */
+.tm-cavity {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  background: radial-gradient(
+    ellipse 84% 76% at 50% 49%,
+    transparent 54%,
+    rgb(11 5 7 / .38) 79%,
+    rgb(6 3 4 / .78) 100%
+  );
+}
+
+/* Full-bleed click target behind the tongue: click the empty mouth to
+   zoom back out. Deliberately not focusable — Escape and the Reset
+   button are the keyboard equivalents. */
+.tm-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: inherit;
+}
+
+.tm-backdrop:focus {
+  outline: none;
+}
+
+/* ------------------------------------------------------------
+   Frame + camera.
+   .tm-frame is exactly the tongue's bounding box and is centred
+   in the viewport. .tm-camera is transformed from its top-left
+   corner, which is what makes the zoom maths exact — see the
+   component for the derivation.
+   ------------------------------------------------------------ */
+.tm-frame {
+  position: relative;
+  z-index: 2;
+  height: 96%;
+  aspect-ratio: 70 / 100;
+}
+
+.tm-camera {
+  position: absolute;
+  inset: 0;
+  /* the anatomy is decorative; only the zone buttons take pointer
+     events, everything else falls through to .tm-backdrop */
+  pointer-events: none;
+  transform-origin: 0 0;
+  transition: transform 900ms var(--ease-out-expo);
+  will-change: transform;
+}
+
+.tm-stage {
+  position: absolute;
+  inset: 0;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+}
+
+.tm-tilt {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--tm-rx) * var(--tm-tiltk)))
+    rotateY(calc(var(--tm-ry) * var(--tm-tiltk)));
+  transition: transform 260ms ease-out;
+  will-change: transform;
+}
+
+.tm-breath {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: rasa-breathe 8s ease-in-out infinite;
+}
+
+/* ============================================================
+   THE TONGUE
+   ============================================================ */
+
+/* Shared organic silhouette: flat-ish root at the top, a broad
+   body, and a generously rounded tip at the bottom. Separate
+   horizontal / vertical radii are what stop it reading as a blob. */
+.tm-tongue,
+.tm-slab {
+  border-radius: 27% 27% 49% 49% / 10% 10% 66% 66%;
+}
+
+.tm-tongue {
+  position: absolute;
+  inset: 5% 7% 3%;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+/* --- Ambient occlusion: where the tongue meets the dark ------ */
+.tm-cast {
+  position: absolute;
+  inset: 17% 3% -1%;
+  transform: translateZ(-50px) translateY(3%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 56% 48% at 50% 71%,
+    rgb(0 0 0 / .72),
+    rgb(0 0 0 / .3) 52%,
+    transparent 76%
+  );
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+/* --- Stacked Z slabs give the body genuine volume ------------ */
+.tm-slab {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Deepest slab — the silhouette / underside, darkest flesh */
+.tm-slab--base {
+  transform: translateZ(0);
+  background:
+    radial-gradient(ellipse 70% 34% at 50% 94%, #681f32, transparent 68%),
+    linear-gradient(180deg, #662839, #873445 44%, #641e32);
+  box-shadow:
+    0 42px 64px -28px rgb(0 0 0 / .78),
+    0 0 0 1px rgb(255 167 183 / .16);
+}
+
+/* Mid slab — the mass of the muscle */
+.tm-slab--mid {
+  inset: 1.2% 1.7% 1.8%;
+  transform: translateZ(13px);
+  background:
+    radial-gradient(ellipse 42% 30% at 50% 86%, rgb(228 151 160 / .3), transparent 72%),
+    linear-gradient(102deg, #863547, #b95a6a 48%, #823244);
+}
+
+/* Top slab — the dorsum, the surface we actually read */
+.tm-slab--dorsum {
+  inset: 2.8% 3.6% 3.2%;
+  transform: translateZ(26px);
+  background:
+    radial-gradient(ellipse 34% 28% at 50% 60%, rgb(238 192 192 / .22), transparent 72%),
+    radial-gradient(ellipse 55% 24% at 50% 8%, rgb(87 25 40 / .38), transparent 75%),
+    radial-gradient(ellipse 90% 86% at 50% 55%, #c46a77, #ad5263 64%, #7d3044 100%);
+  box-shadow:
+    inset 13px 0 23px -18px rgb(255 210 216 / .5),
+    inset -14px 0 25px -18px rgb(82 12 34 / .65),
+    inset 0 -22px 34px -24px rgb(255 220 222 / .42),
+    inset 0 14px 28px -22px rgb(62 8 25 / .62);
+}
+
+/* Irregular mucosal colour and a faint central coating keep the surface
+   organic rather than reading as a smooth illustrated shape. */
+.tm-slab--dorsum::before {
+  content: '';
+  position: absolute;
+  inset: 4% 5% 6%;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse 26% 52% at 48% 48%, rgb(240 204 197 / .14), transparent 76%),
+    radial-gradient(circle at 26% 36%, rgb(92 29 43 / .13) 0 2%, transparent 9%),
+    radial-gradient(circle at 72% 43%, rgb(241 170 174 / .16) 0 3%, transparent 11%),
+    radial-gradient(circle at 31% 72%, rgb(85 26 40 / .11) 0 2%, transparent 10%),
+    radial-gradient(circle at 68% 78%, rgb(239 174 178 / .12) 0 2%, transparent 9%);
+  filter: blur(2px);
+  opacity: .9;
+}
+
+/* Subtle sub-surface veins are confined to the thin lower edge. */
+.tm-slab--dorsum::after {
+  content: '';
+  position: absolute;
+  right: 14%;
+  bottom: 5%;
+  left: 14%;
+  height: 25%;
+  border-radius: 0 0 50% 50%;
+  background:
+    linear-gradient(72deg, transparent 43%, rgb(75 71 111 / .2) 44% 45%, transparent 46%) 12% 30% / 42% 65% no-repeat,
+    linear-gradient(108deg, transparent 43%, rgb(75 71 111 / .18) 44% 45%, transparent 46%) 88% 38% / 42% 62% no-repeat;
+  filter: blur(.6px);
+  opacity: .55;
+}
+
+/* --- Subsurface scatter: light bleeding through thin edges --- */
+.tm-sss {
+  position: absolute;
+  inset: 1.5%;
+  transform: translateZ(8px);
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 100% 92% at 50% 56%,
+    transparent 58%,
+    rgb(255 96 128 / 0.4) 84%,
+    rgb(255 150 170 / 0.5) 100%
+  );
+  filter: blur(12px);
+  mix-blend-mode: screen;
+  opacity: .34;
+}
+
+/* ============================================================
+   PAPILLAE
+   ============================================================ */
+
+/* --- Filiform: the fine velvet nap, three interleaved
+       gradient grids at different background-sizes ----------- */
+.tm-filiform {
+  position: absolute;
+  inset: 2.9% 3.7% 3.3%;
+  transform: translateZ(29px);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: .3;
+  background-image:
+    radial-gradient(ellipse, rgb(236 205 204 / .31) 0 12%, transparent 20%),
+    radial-gradient(circle, rgb(89 31 45 / .2) 0 14%, transparent 23%);
+  background-size: 6px 8px, 9px 11px;
+  background-position: 0 0, 3px 4px;
+  /* fade the texture off the rim so it never crosses the silhouette */
+  mask-image: radial-gradient(ellipse 90% 92% at 50% 55%, #000 58%, transparent 94%);
+}
+
+/* --- Median sulcus: the groove down the midline ------------- */
+.tm-sulcus {
+  position: absolute;
+  top: 8%;
+  bottom: 18%;
+  left: 50%;
+  width: 1.3%;
+  transform: translateX(-50%) translateZ(31px);
+  pointer-events: none;
+  border-radius: 50%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(104 24 46 / .42) 35%,
+    rgb(83 18 39 / .58) 50%,
+    rgb(255 195 204 / .14) 66%,
+    transparent
+  );
+  filter: blur(.7px);
+  mask-image: linear-gradient(180deg, transparent, #000 18%, #000 78%, transparent);
+}
+
+/* --- Circumvallate: the V-shaped row near the root ---------- */
+.tm-vallate {
+  position: absolute;
+  width: 2.5%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) translateZ(31px);
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 38% 32%, rgb(255 220 228 / 0.55), transparent 46%),
+    radial-gradient(circle at 50% 54%, var(--color-flesh-500), var(--color-flesh-800) 68%);
+  box-shadow:
+    0 0 0 1px rgb(91 19 40 / .5),
+    0 1px 2px rgb(0 0 0 / .28);
+  opacity: .46;
+}
+
+/* --- Fungiform: individually-lit taste buds ----------------- */
+.tm-fungiform {
+  position: absolute;
+  left: calc(var(--fx) * 1%);
+  top: calc(var(--fy) * 1%);
+  width: calc(var(--fs) * 1.08%);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) translateZ(32px);
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 30%, rgb(255 236 240 / 0.75), transparent 50%),
+    radial-gradient(circle at 50% 58%, var(--color-flesh-400), var(--color-flesh-700) 78%);
+  box-shadow: 0 1px 2px rgb(75 10 29 / .36);
+  opacity: .42;
+  animation: tm-bud-glint 6s ease-in-out infinite;
+  animation-delay: calc(var(--fd) * -1s);
+}
+
+/* --- Wet specular highlight, driven by pointer position ----- */
+.tm-wet {
+  position: absolute;
+  inset: 3% 3.8% 3.4%;
+  transform: translateZ(35px);
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: .34;
+  background:
+    radial-gradient(
+      ellipse 22% 11% at var(--tm-px) var(--tm-py),
+      rgb(255 255 255 / .42),
+      rgb(255 222 226 / .12) 56%,
+      transparent 78%
+    ),
+    radial-gradient(ellipse 35% 9% at 50% 87%, rgb(255 240 242 / .16), transparent 72%);
+  filter: blur(3px);
+  transition: background-position 120ms linear;
+}
+
+/* --- Drifting sheen: the film of saliva ---------------------- */
+.tm-sheen {
+  position: absolute;
+  inset: 3% 3.8% 3.4%;
+  transform: translateZ(36px);
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  opacity: .24;
+  background: linear-gradient(
+    112deg,
+    transparent 34%,
+    rgb(255 255 255 / 0.42) 48%,
+    rgb(255 255 255 / 0.08) 56%,
+    transparent 68%
+  );
+  background-size: 220% 100%;
+  animation: rasa-shimmer 11s linear infinite;
+}
+
+/* --- Rim light: cold key from the top of the mouth ---------- */
+.tm-rim {
+  position: absolute;
+  inset: 2.8% 3.6% 3.2%;
+  transform: translateZ(37px);
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 1px 1px rgb(255 229 232 / .32),
+    inset 0 -2px 18px rgb(255 155 173 / .12),
+    0 0 0 1px rgb(255 190 200 / .12);
+}
+
+@keyframes tm-bud-glint {
+  0%,
+  100% {
+    opacity: 0.6;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.95;
+    filter: brightness(1.28);
+  }
+}
+
+/* ============================================================
+   THE SIX RASA ZONES
+   ------------------------------------------------------------
+   An artistic device, not a claim: the "tongue taste map" is a
+   long-debunked myth. Copy elsewhere on the page says so.
+   ============================================================ */
+
+.tm-zones {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.tm-zone {
+  position: absolute;
+  left: calc(var(--zx) * 1%);
+  top: calc(var(--zy) * 1%);
+  width: calc(var(--zr) * 2%);
+  aspect-ratio: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) translateZ(40px);
+  transform-style: preserve-3d;
+  transition:
+    transform 520ms var(--ease-out-expo),
+    opacity 520ms var(--ease-out-expo),
+    filter 520ms var(--ease-out-expo);
+}
+
+.tm-zone:focus {
+  outline: none;
+}
+
+.tm-zone:focus-visible .tm-ring {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Focus ring counter-scales with the map zoom so it stays a
+   consistent 2px on screen — same trick as map labels. */
+.tm-ring {
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.86);
+  border: calc(2.5px / var(--tm-zoom)) solid var(--color-brass);
+  box-shadow: 0 0 0 calc(4px / var(--tm-zoom)) rgb(201 162 39 / 0.25);
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms var(--ease-spring);
+}
+
+/* --- Halo: the animated bloom, tweened via the registered
+       --glow custom property from index.css ------------------ */
+.tm-halo {
+  --glow: 24%;
+  position: absolute;
+  inset: -32%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--rasa-base) 0%,
+    color-mix(in oklab, var(--rasa-base), transparent 62%) 30%,
+    transparent var(--glow)
+  );
+  opacity: 0.18;
+  filter: blur(9px);
+  transition:
+    --glow 620ms var(--ease-out-expo),
+    opacity 620ms var(--ease-out-expo);
+}
+
+.tm-zone:hover .tm-halo,
+.tm-zone:focus-visible .tm-halo {
+  --glow: 74%;
+  opacity: 0.48;
+}
+
+.tm-zone[data-selected='true'] .tm-halo {
+  opacity: 0.58;
+  animation: tm-bloom 3.6s ease-in-out infinite;
+}
+
+@keyframes tm-bloom {
+  0%,
+  100% {
+    --glow: 56%;
+  }
+  50% {
+    --glow: 88%;
+  }
+}
+
+/* --- The bloom of nubs -------------------------------------- */
+.tm-bloom {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.tm-nub {
+  position: absolute;
+  left: calc(var(--nx) * 1%);
+  top: calc(var(--ny) * 1%);
+  width: calc(var(--ns) * .68%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) translateZ(calc(var(--ns) * 0.32px));
+  background:
+    radial-gradient(circle at 34% 28%, rgb(255 238 235 / 0.34), transparent 38%),
+    radial-gradient(
+      circle at 52% 60%,
+      color-mix(in oklab, var(--rasa-light), #b35b69 38%) 0%,
+      color-mix(in oklab, var(--rasa-base), #9f4b5e 34%) 54%,
+      color-mix(in oklab, var(--rasa-deep), #713246 28%) 100%
+    );
+  box-shadow:
+    0 0 3px color-mix(in oklab, var(--rasa-base), transparent 68%),
+    0 1px 1px rgb(0 0 0 / 0.38);
+  animation: rasa-pulse 4.8s ease-in-out infinite;
+  animation-delay: calc(var(--nd) * -1s);
+  transition:
+    opacity 620ms var(--ease-out-expo),
+    transform 620ms var(--ease-out-expo);
+}
+
+/* Level of detail: the fine nubs are hidden in the overview and
+   resolve in when you zoom, exactly like a map tile sharpening. */
+.tm-nub--fine {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.3);
+  width: calc(var(--ns) * 0.62%);
+  animation-duration: 2.4s;
+}
+
+.tm-zone[data-selected='true'] .tm-nub--fine {
+  opacity: 0.92;
+  transform: translate(-50%, -50%) translateZ(6px) scale(1);
+}
+
+.tm-zone[data-selected='true'] .tm-nub {
+  box-shadow:
+    0 0 12px color-mix(in oklab, var(--rasa-light), transparent 25%),
+    0 0 3px rgb(255 255 255 / 0.65),
+    0 2px 4px rgb(0 0 0 / 0.5);
+}
+
+.tm-zone:hover,
+.tm-zone:focus-visible {
+  transform: translate(-50%, -50%) translateZ(76px);
+}
+
+.tm-zone[data-selected='true'] {
+  transform: translate(-50%, -50%) translateZ(64px);
+}
+
+/* Everything that is not the selection recedes when zoomed */
+.tm-zones[data-zoomed='true'] .tm-zone[data-selected='false'] {
+  opacity: 0.16;
+  filter: grayscale(0.9) blur(1px);
+}
+
+/* --- Label: Devanagari + romanised, counter-scaled ---------- */
+.tm-label {
+  position: absolute;
+  left: 50%;
+  bottom: -14%;
+  transform: translate(-50%, 100%) translateZ(30px) scale(calc(1 / var(--tm-label-k)));
+  transform-origin: 50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  background: rgb(11 5 7 / 0.82);
+  backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid color-mix(in oklab, var(--rasa-base), transparent 60%);
+  box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.9);
+  transition: opacity 380ms var(--ease-out-expo);
+}
+
+.tm-zone:hover .tm-label,
+.tm-zone:focus-visible .tm-label,
+.tm-zone[data-selected='true'] .tm-label {
+  opacity: 1;
+}
+
+.tm-label-deva {
+  font-family: var(--font-deva);
+  font-size: 15px;
+  line-height: 1.1;
+  color: var(--rasa-light);
+}
+
+.tm-label-name {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-paper);
+}
+
+.tm-label-en {
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-paper-dim), transparent 35%);
+}
+
+/* ============================================================
+   HUD — map furniture
+   ============================================================ */
+.tm-hud {
+  position: absolute;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.tm-hud--zoom {
+  left: 14px;
+  bottom: 14px;
+}
+
+.tm-hud--reset {
+  right: 14px;
+  bottom: 14px;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.tm-guide-console {
+  position: absolute;
+  z-index: 12;
+  top: 14px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px;
+  border-radius: 15px;
+  transform: translateX(-50%) translateZ(40px);
+  box-shadow: 0 10px 0 -5px #080405, 0 18px 30px rgb(0 0 0 / 0.42);
+}
+
+.tm-guide-console__name {
+  padding-inline: 8px;
+  color: var(--color-brass);
+  font-size: 0.64rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tm-guide-console button {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding-inline: 10px;
+  border: 1px solid rgb(247 236 224 / 0.28);
+  border-radius: 10px;
+  color: var(--color-paper);
+  background: linear-gradient(180deg, #3a2027, #1a0c10);
+  box-shadow: 0 4px 0 #080405, inset 0 1px rgb(255 255 255 / 0.13);
+  font: 750 0.67rem var(--font-sans);
+  cursor: pointer;
+  transition: transform 160ms var(--ease-spring), box-shadow 160ms ease, color 160ms ease;
+}
+
+.tm-guide-console button:hover,
+.tm-guide-console button:focus-visible {
+  color: #ffe39c;
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #080405, inset 0 1px rgb(255 255 255 / 0.13);
+}
+
+.tm-hud-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-brass);
+  min-width: 34px;
+  text-align: right;
+}
+
+.tm-hud-label {
+  color: color-mix(in oklab, var(--color-paper-dim), transparent 40%);
+  text-transform: uppercase;
+}
+
+.tm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-paper);
+  cursor: pointer;
+  transition:
+    transform 220ms var(--ease-spring),
+    color 220ms ease,
+    opacity 300ms ease;
+}
+
+.tm-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  color: var(--color-brass);
+}
+
+.tm-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Zoom scale bar — a little cartographic honesty */
+.tm-scalebar {
+  width: 46px;
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.tm-scalebar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-copper), var(--color-brass));
+  transition: width 900ms var(--ease-out-expo);
+}
+
+/* ============================================================
+   Reduced motion — index.css already neutralises animation and
+   transition durations; the parallax rAF is skipped in JS.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .tm-tilt {
+    transform: none;
+  }
+  .tm-sheen {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .tm-viewport { aspect-ratio: 4 / 5; border-radius: 22px; }
+  .tm-frame { height: 94%; aspect-ratio: 68 / 100; }
+  .tm-guide-console { right: 10px; left: 10px; justify-content: center; transform: none; }
+  .tm-guide-console__name { display: none; }
+  .tm-guide-console button { flex: 1; padding-inline: 6px; }
+}

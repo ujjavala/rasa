@@ -1,0 +1,290 @@
+@import 'tailwindcss';
+
+/* ============================================================
+   RASA — design tokens
+   ============================================================ */
+@theme {
+  --font-display: 'Fraunces', ui-serif, Georgia, serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-deva: 'Yatra One', 'Fraunces', ui-serif, serif;
+
+  /* Ground: a dark, warm, spice-tin interior */
+  --color-ink-900: #0b0507;
+  --color-ink-800: #150a0d;
+  --color-ink-700: #211015;
+  --color-ink-600: #32191f;
+  --color-ink-500: #4a252d;
+
+  /* Parchment / paper */
+  --color-paper: #f7ece0;
+  --color-paper-dim: #e3d3c2;
+
+  /* The six rasas */
+  --color-madhura: #f0a830; /* sweet — jaggery gold */
+  --color-amla: #a8c83c; /* sour — raw mango */
+  --color-lavana: #7fb2d9; /* salty — sea */
+  --color-katu: #e14434; /* pungent — chilli */
+  --color-tikta: #4a8f5f; /* bitter — karela */
+  --color-kashaya: #9a6ec4; /* astringent — jamun */
+
+  /* Tongue flesh */
+  --color-flesh-900: #6e1226;
+  --color-flesh-800: #93203a;
+  --color-flesh-700: #b83350;
+  --color-flesh-600: #d44f68;
+  --color-flesh-500: #e8798c;
+  --color-flesh-400: #f2a3b0;
+
+  /* Metals */
+  --color-brass: #c9a227;
+  --color-copper: #b46a3f;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Animatable custom properties (for gradient/glow tweening) */
+@property --glow {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+@property --sheen {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+@property --spin {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    overflow-x: clip;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-ink-900);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-katu);
+    color: #fff;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink-800);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(var(--color-flesh-800), var(--color-ink-600));
+    border-radius: 99px;
+    border: 2px solid var(--color-ink-800);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(var(--color-flesh-700), var(--color-ink-500));
+  }
+
+  :focus-visible {
+    outline: 3px solid #fff8e7;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 6px #4b1428;
+    border-radius: 4px;
+  }
+
+  :is(a, button, select, [role='tab']) {
+    min-block-size: 44px;
+  }
+}
+
+/* ============================================================
+   Shared utilities — 3D, texture, type
+   ============================================================ */
+@layer utilities {
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  .perspective-near {
+    perspective: 700px;
+  }
+  .perspective-mid {
+    perspective: 1400px;
+  }
+  .perspective-far {
+    perspective: 2600px;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .font-deva {
+    font-family: var(--font-deva);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Fine paper/film grain, no image assets */
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.28;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  }
+
+  /* Warm vignette to focus the centre of the stage */
+  .vignette::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 90% 70% at 50% 45%,
+      transparent 30%,
+      rgb(11 5 7 / 0.55) 75%,
+      rgb(11 5 7 / 0.92) 100%
+    );
+  }
+
+  /* Glass card with a warm rim-light */
+  .glass {
+    background:
+      linear-gradient(160deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.02)),
+      rgb(21 10 13 / 0.72);
+    backdrop-filter: blur(18px) saturate(1.3);
+    border: 1px solid rgb(255 255 255 / 0.09);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.12),
+      inset 0 -1px 0 0 rgb(0 0 0 / 0.4),
+      0 24px 60px -20px rgb(0 0 0 / 0.75);
+  }
+
+  .hairline {
+    border-image: linear-gradient(
+        90deg,
+        transparent,
+        rgb(201 162 39 / 0.5),
+        transparent
+      )
+      1;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+}
+
+/* ============================================================
+   Shared keyframes
+   ============================================================ */
+@keyframes rasa-breathe {
+  0%,
+  100% {
+    transform: scale(1) translateZ(0);
+  }
+  50% {
+    transform: scale(1.018) translateZ(6px);
+  }
+}
+
+@keyframes rasa-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes rasa-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(2deg);
+  }
+}
+
+@keyframes rasa-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -60px, 40px);
+  }
+}
+
+@keyframes rasa-spin {
+  to {
+    --spin: 360deg;
+  }
+}
+
+@keyframes rasa-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes rasa-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

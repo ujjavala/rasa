@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Production and local build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+
+# Logs and package-manager diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test and coverage output
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# Vite caches
+.vite/
+
+# Editors and IDE metadata
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Local deployment metadata
+.vercel/
+.netlify/
+
+# User-requested exclusion: never stage, commit, or push this exact filename
+styles.css

@@ -1,0 +1,108 @@
+import type { Region } from '../types';
+
+export const regions: Region[] = [
+  {
+    id: 'himalayan',
+    name: 'The Himalayan Belt',
+    states: ['Ladakh', 'Jammu & Kashmir', 'Himachal Pradesh', 'Uttarakhand', 'Sikkim'],
+    signature: 'Altitude cooking — fat as fuel, ferment as fridge, almost no chilli.',
+    description:
+      'Above the tree line there is no monsoon larder, so food is preserved by drying, fermenting and salting, and calories arrive as butter and barley. Kashmir sits on the old Persian and Central Asian caravan route and eats like it: dried cockscomb flower, fennel, dry ginger and no tomato. Further east, Sikkim and Darjeeling eat a Nepali-Tibetan grammar of gundruk, churpi and steamed dumplings.',
+    fat: 'Yak butter, mustard oil and ghee',
+    staple: 'Barley (tsampa), buckwheat, red rice',
+    dominantRasa: ['lavana', 'kashaya', 'amla'],
+    color: '#7fb2d9',
+    pos: { x: 40, y: 8 },
+  },
+  {
+    id: 'north',
+    name: 'The Northern Plains',
+    states: ['Punjab', 'Haryana', 'Delhi', 'Uttar Pradesh', 'Chandigarh'],
+    signature: 'Wheat, dairy and the long shadow of court kitchens.',
+    description:
+      'The Indo-Gangetic plain is wheat country — the only large Indian region where bread, not rice, is the default. Dairy is abundant, so ghee, paneer, curd and cream do the work that coconut does in the south. Centuries of Delhi Sultanate, Mughal and Awadhi patronage left behind a slow, perfumed court cuisine of dum, korma and kebab that the world mistakenly reads as all of India.',
+    fat: 'Ghee, white butter and mustard oil',
+    staple: 'Wheat — roti, naan, kulcha',
+    dominantRasa: ['madhura', 'katu', 'lavana'],
+    color: '#f0a830',
+    pos: { x: 42, y: 25 },
+  },
+  {
+    id: 'northeast',
+    name: 'The Northeast',
+    states: ['Assam', 'Manipur', 'Meghalaya', 'Nagaland', 'Mizoram', 'Tripura', 'Arunachal Pradesh'],
+    signature: 'Fermentation, foraging and heat without a spice box.',
+    description:
+      'Eight states, more than two hundred communities, and a cooking logic almost unrelated to the rest of India: boiling and steaming over frying, fermented fish and soybean over garam masala, foraged greens and bamboo shoot over cultivated vegetables. Assam alone runs alkaline khar at one end of a meal and sour tenga at the other. The world\'s hottest chillies grow here, yet the food is not built on masala at all.',
+    fat: 'Mustard oil, pork fat, or none at all',
+    staple: 'Rice — sticky, red and black varieties',
+    dominantRasa: ['amla', 'lavana', 'kashaya'],
+    color: '#4a8f5f',
+    pos: { x: 84, y: 22 },
+  },
+  {
+    id: 'east',
+    name: 'The East',
+    states: ['West Bengal', 'Bihar', 'Jharkhand', 'Odisha'],
+    signature: 'Rice, river fish, and a meal served in a fixed order of tastes.',
+    description:
+      'Delta country: rice, freshwater fish, mustard oil and the sharpest sweet tooth in India, built on chhena — milk curdled deliberately, a technique widely credited to Portuguese contact in Bengal. Bengali dining is one of the few Indian traditions with a strict sequence, beginning bitter and ending sweet, which is essentially the Shadrasa served as a timetable. Odisha adds the oldest continuously running temple kitchen on earth.',
+    fat: 'Mustard oil and ghee',
+    staple: 'Rice — and a great deal of it',
+    dominantRasa: ['madhura', 'tikta', 'katu'],
+    color: '#e14434',
+    pos: { x: 71, y: 44 },
+  },
+  {
+    id: 'central',
+    name: 'The Central Highlands',
+    states: ['Madhya Pradesh', 'Chhattisgarh'],
+    signature: 'Forest food — millets, mahua, and things the market never sold.',
+    description:
+      'India\'s forested heart is Adivasi country: Gond, Baiga, Bhil and Muria kitchens built on minor millets, tubers, mahua flowers, wild greens, and proteins the mainstream has only just noticed, from red weaver ants to bamboo grubs. Overlaid on top is Malwa and Bundelkhand cooking — baked wheat baflas, and the fried, sweet-salt street food of Indore.',
+    fat: 'Ghee and mahua oil',
+    staple: 'Kodo, kutki and other minor millets; wheat in Malwa',
+    dominantRasa: ['kashaya', 'katu', 'madhura'],
+    color: '#9a6ec4',
+    pos: { x: 48, y: 46 },
+  },
+  {
+    id: 'west',
+    name: 'The West & Deccan',
+    states: ['Rajasthan', 'Gujarat', 'Maharashtra'],
+    signature: 'Desert thrift, Jain restraint and Deccan chilli, side by side.',
+    description:
+      'Where water is scarce, Rajasthan cooks with none — curd, buttermilk and dried desert beans instead. Gujarat runs the largest vegetarian cuisine in the world and is unafraid to put jaggery in a savoury dal. Inland Maharashtra swings the other way into fierce kanda-lasun heat, while three migrant communities — Parsi, Bohra and Sindhi — added Persian, Yemeni and Sindh flavours to the same coastline.',
+    fat: 'Ghee, groundnut oil and sesame oil',
+    staple: 'Bajra, jowar and wheat',
+    dominantRasa: ['madhura', 'katu', 'amla'],
+    color: '#f0a830',
+    pos: { x: 24, y: 48 },
+  },
+  {
+    id: 'coastal',
+    name: 'The Coastal Arc',
+    states: ['Goa', 'Konkan (Maharashtra)', 'Coastal Karnataka', 'Kerala', 'Lakshadweep', 'Andaman & Nicobar Islands'],
+    signature: 'Coconut, souring fruit and five hundred years of sea traffic.',
+    description:
+      'The Malabar and Konkan coasts were the destination, not the periphery — Roman gold, Arab dhows, Chinese junks and then Vasco da Gama at Calicut in 1498, all of it for pepper. Coconut supplies fat, thickener and sweetness; sourness comes from fruit rinds that survive humidity, kokum in the Konkan and kudampuli in Kerala. Syrian Christian, Mappila, Goan Catholic and Jewish kitchens all layered onto the same shoreline.',
+    fat: 'Coconut oil and coconut milk',
+    staple: 'Rice — parboiled, red matta, and rice-flour breads',
+    dominantRasa: ['amla', 'katu', 'kashaya'],
+    color: '#a8c83c',
+    pos: { x: 26, y: 72 },
+  },
+  {
+    id: 'south',
+    name: 'The South',
+    states: ['Tamil Nadu', 'Karnataka', 'Andhra Pradesh', 'Telangana', 'Puducherry'],
+    signature: 'Fermented batters, tamarind, and the six tastes served on one leaf.',
+    description:
+      'The south perfected fermentation as a daily technology — idli and dosa batters souring overnight — and tamarind as the spine of everything from rasam to pitlai. A banana-leaf meal here is the clearest surviving expression of Shadrasa: sweet, sour, salt, pungent, bitter and astringent laid out in fixed positions on the leaf. The Deccan adds Hyderabadi and Chettinad court cooking; Andhra adds the country\'s bluntest chilli.',
+    fat: 'Sesame (gingelly) oil, coconut oil and ghee',
+    staple: 'Rice, ragi and urad-dal batters',
+    dominantRasa: ['amla', 'katu', 'tikta'],
+    color: '#4a8f5f',
+    pos: { x: 46, y: 84 },
+  },
+];
