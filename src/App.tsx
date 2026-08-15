@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { BookOpen, Compass, Footprints, Map, Sparkles } from 'lucide-react';
 import ExplorePanel from './components/ExplorePanel';
@@ -17,6 +17,7 @@ export default function App() {
   const [guideAction, setGuideAction] = useState<'greet' | 'scout' | 'lore'>('greet');
   const [guideActionKey, setGuideActionKey] = useState(0);
   const [guideDialogue, setGuideDialogue] = useState<string | undefined>();
+  const dialogueTurn = useRef(0);
 
   const active = useMemo(
     () => rasas.find((rasa) => rasa.id === activeRasa) ?? null,
@@ -34,6 +35,7 @@ export default function App() {
     setSelectedRegion(null);
     setActiveDish(null);
     if (id) {
+      dialogueTurn.current = 0;
       setGuideAction('greet');
       setGuideDialogue(undefined);
       setGuideActionKey((key) => key + 1);
@@ -44,11 +46,30 @@ export default function App() {
 
   const commandGuide = useCallback((action: 'greet' | 'scout' | 'lore') => {
     if (!active) return;
+    dialogueTurn.current += 1;
+    const turn = dialogueTurn.current;
+    const explorer = EXPLORERS[active.id];
+    const carriers = active.carriers.slice(0, 4).join(', ');
+    const responses = {
+      greet: [
+        explorer.greeting,
+        `I’m ${explorer.name}. Stay close—every flavour leaves a clue.`,
+        `Ready for another taste of ${active.name} country?`,
+      ],
+      scout: [
+        `I found ${carriers}. These are strong carriers of ${active.english.toLowerCase()}.`,
+        `I found ${carriers}. Look at their colour, aroma and texture too.`,
+        `I found ${carriers}. Which one belongs on your table?`,
+      ],
+      lore: [
+        `${active.tagline} ${active.elements} shape this rasa’s traditional character.`,
+        `Field note: ${active.mythBuster}`,
+        `${active.name} is one thread in a much larger regional food story.`,
+      ],
+    } as const;
     setGuideAction(action);
     setGuideActionKey((key) => key + 1);
-    if (action === 'greet') setGuideDialogue(EXPLORERS[active.id].greeting);
-    if (action === 'scout') setGuideDialogue(`I found ${active.carriers.slice(0, 4).join(', ')}. These are strong carriers of ${active.english.toLowerCase()}.`);
-    if (action === 'lore') setGuideDialogue(`${active.tagline} ${active.elements} shape this rasa’s traditional character.`);
+    setGuideDialogue(responses[action][turn % responses[action].length]);
   }, [active]);
 
   return (

@@ -50,7 +50,7 @@ Each taste has a persistent guide with a distinct age, role, silhouette, dialogu
 | Tikta · bitter | **Nima** | Ethnobotanical Elder |
 | Kashaya · astringent | **Jamu** | Tea and Tannin Cartographer |
 
-The portraits are deterministic, locally generated DiceBear Open Peeps SVGs. Masks are explicitly disabled. The avatars use finite command and travel gestures rather than distracting perpetual idle loops.
+The portraits are hand-built from nested HTML elements and CSS gradients, borders, pseudo-elements, shadows, and transforms. No SVG, canvas, generated avatar, or image asset is used. The figures use finite command and travel gestures rather than distracting perpetual idle loops.
 
 Guide commands include:
 
@@ -177,9 +177,7 @@ Automated tests are a safety net, not a claim that automation alone proves compl
 - TypeScript 5.7 in strict mode
 - Vite 6
 - Tailwind CSS 4 via the Vite plugin
-- Framer Motion
 - Lucide React icons
-- DiceBear Open Peeps
 - ESLint 9
 - Stylelint
 - Playwright
@@ -203,7 +201,7 @@ src/
 ├── components/
 │   ├── SiteShell.tsx           Header, hero, atmospheric layer, footer
 │   ├── TongueMap.tsx           Zoomable six-rasa map
-│   ├── RasaExplorer.tsx        Guide portraits and finite command motion
+│   ├── RasaExplorer.tsx        Pure-CSS guide portraits and finite command motion
 │   ├── ExplorePanel.tsx        Tabs, storybook, dish and region exploration
 │   ├── DishPlate.tsx           Data-driven CSS food renderer
 │   └── *.css                   CSS art, 3D, responsive and a11y states
@@ -290,13 +288,12 @@ npx playwright install chromium
 ## Data and attribution
 
 - Dish “read more” links point to Wikipedia for further context. Those pages and their contents remain under their respective licences.
-- Guide portraits are generated using [DiceBear](https://www.dicebear.com/) and the Open Peeps style. Review the upstream DiceBear and Open Peeps licence terms when redistributing generated artwork.
 - Lucide icons are provided by [Lucide](https://lucide.dev/).
 - The food and tongue illustrations in the interface are generated from project CSS and application data; the application does not depend on remote food photographs.
 
-## Known engineering consideration
+## CSS-first implementation
 
-The six DiceBear avatars are currently generated in the client bundle, which makes the main JavaScript chunk larger than ideal. A future optimization is to pre-generate the six SVGs at build time or lazy-load the avatar module. Vite may therefore report a non-failing large-chunk advisory during production builds.
+JavaScript is reserved for purposeful interaction: selecting a taste, moving the map camera, paging through field notes, and pausing motion. The visual language—food, vessels, ingredients, landscape, tongue, guide characters, texture, depth, lighting, and atmosphere—is authored in CSS.
 
 ## Future directions
 

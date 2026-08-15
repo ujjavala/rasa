@@ -1,40 +1,8 @@
 import type { CSSProperties } from 'react';
-import { createAvatar } from '@dicebear/core';
-import * as openPeeps from '@dicebear/open-peeps';
-import type { Options as OpenPeepsOptions } from '@dicebear/open-peeps';
-import { motion, useReducedMotion } from 'framer-motion';
-import type { TargetAndTransition } from 'framer-motion';
 import { rasas } from '../data/rasas';
 import { EXPLORERS } from '../data/explorers';
 import type { RasaId } from '../types';
 import './explorer.css';
-
-type AvatarOptions = OpenPeepsOptions & { seed: string; backgroundColor?: string[] };
-
-const AVATAR_OPTIONS: Record<RasaId, AvatarOptions> = {
-  madhura: { seed: 'Guddi-Archivist', head: ['grayBun'], face: ['calm'], accessories: ['glasses2'], accessoriesProbability: 100, skinColor: ['ae5d29'], clothingColor: ['f0a830'] },
-  amla: { seed: 'Ami-Botanist-II', head: ['bantuKnots'], face: ['smileBig'], accessoriesProbability: 0, skinColor: ['d08b5b'], clothingColor: ['a8c83c'] },
-  lavana: { seed: 'Neer-Navigator', head: ['turban'], face: ['serious'], facialHair: ['moustache4'], facialHairProbability: 100, accessoriesProbability: 0, skinColor: ['ae5d29'], clothingColor: ['7fb2d9'] },
-  katu: { seed: 'Tara-Chronicler', head: ['longBangs'], face: ['driven'], accessoriesProbability: 0, skinColor: ['694d3d'], clothingColor: ['e14434'] },
-  tikta: { seed: 'Nima-Herbalist', head: ['grayMedium'], face: ['old'], facialHair: ['full3'], facialHairProbability: 100, accessoriesProbability: 0, skinColor: ['d08b5b'], clothingColor: ['4a8f5f'] },
-  kashaya: { seed: 'Jamu-Apprentice', head: ['hatBeanie'], face: ['cheeky'], accessoriesProbability: 0, skinColor: ['d08b5b'], clothingColor: ['9a6ec4'] },
-};
-
-const AVATARS = Object.fromEntries(
-  (Object.keys(AVATAR_OPTIONS) as RasaId[]).map((id) => [
-    id,
-    createAvatar(openPeeps, { ...AVATAR_OPTIONS[id], maskProbability: 0 }).toDataUri(),
-  ]),
-) as Record<RasaId, string>;
-
-const GUIDE_TOOLS: Record<RasaId, string> = {
-  madhura: '🥻',
-  amla: '🌿',
-  lavana: '🧭',
-  katu: '🌶️',
-  tikta: '🪴',
-  kashaya: '📓',
-};
 
 type ExplorerStyle = CSSProperties & {
   '--explorer-color': string;
@@ -64,7 +32,6 @@ export function TasteGuide({
   actionKey = 0,
   dialogue,
 }: Readonly<TasteGuideProps>) {
-  const reduceMotion = useReducedMotion();
   const rasa = rasas.find((item) => item.id === rasaId)!;
   const explorer = EXPLORERS[rasaId];
   const style: ExplorerStyle = {
@@ -78,16 +45,6 @@ export function TasteGuide({
   if (active) speech = `${explorer.greeting} Choose a dish or region below.`;
   if (destination) speech = `${destination} is our next stop. Follow me!`;
   if (dialogue) speech = dialogue;
-  let guideAnimation: TargetAndTransition | undefined;
-  if (!reduceMotion && travelling) {
-    guideAnimation = { x: [0, 6, -3, 0], y: [0, -4, 0], rotate: [0, 2, -2, 0] };
-  } else if (!reduceMotion && active && action === 'greet') {
-    guideAnimation = { y: [0, -7, 0], rotate: [0, -3, 3, 0] };
-  } else if (!reduceMotion && active && action === 'scout') {
-    guideAnimation = { x: [0, 7, 4, -3, 0], scale: [1, 1.06, 1.06, 1] };
-  } else if (!reduceMotion && active && action === 'lore') {
-    guideAnimation = { rotateY: [0, 16, -10, 0], y: [0, -3, 0] };
-  }
 
   return (
     <span
@@ -95,21 +52,37 @@ export function TasteGuide({
       data-rasa={rasaId}
       data-active={active ? 'true' : 'false'}
       data-travelling={travelling ? 'true' : 'false'}
+      data-action={active ? action : undefined}
       style={style}
       aria-hidden="true"
     >
-      <span className="taste-guide__bubble">{speech}</span>
+      <span key={`speech-${actionKey}`} className="taste-guide__bubble"><i />{speech}</span>
       <span className="taste-guide__library-shadow" />
-      <motion.span
+      <span
         key={`${rasaId}-${action}-${actionKey}`}
-        className="taste-guide__library-character"
-        animate={guideAnimation}
-        transition={{ duration: travelling ? 0.72 : 0.9, repeat: 0, ease: 'easeInOut' }}
+        className="taste-guide__character"
+        data-action={active ? action : undefined}
+        data-travelling={travelling ? 'true' : 'false'}
       >
-        <img src={AVATARS[rasaId]} alt="" draggable={false} />
-        {rasaId === 'katu' && <span className="taste-guide__bindi" />}
-        <span className="taste-guide__tool" title={explorer.epithet}>{GUIDE_TOOLS[rasaId]}</span>
-      </motion.span>
+        <span className="taste-guide__leg taste-guide__leg--left" />
+        <span className="taste-guide__leg taste-guide__leg--right" />
+        <span className="taste-guide__body"><i /><i /><i /></span>
+        <span className="taste-guide__costume"><i /></span>
+        <span className="taste-guide__arm taste-guide__arm--left" />
+        <span className="taste-guide__arm taste-guide__arm--right" />
+        <span className="taste-guide__head">
+          <i className="taste-guide__hair" />
+          <i className="taste-guide__ear taste-guide__ear--left" />
+          <i className="taste-guide__ear taste-guide__ear--right" />
+          <i className="taste-guide__eye taste-guide__eye--left" />
+          <i className="taste-guide__eye taste-guide__eye--right" />
+          <i className="taste-guide__nose" />
+          <i className="taste-guide__mouth" />
+          <i className="taste-guide__hair-ribbon" />
+          <i className="taste-guide__detail" />
+        </span>
+        <span className="taste-guide__tool" title={explorer.epithet}><i /></span>
+      </span>
     </span>
   );
 }

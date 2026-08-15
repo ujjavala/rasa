@@ -530,6 +530,9 @@ export default function TongueMap({
             <button type="button" onClick={(event) => { event.stopPropagation(); onGuideAction('lore'); }}>
               <BookOpen size={14} aria-hidden="true" /> Lore
             </button>
+            <span className="sr-only" role="status" aria-live="polite">
+              {guideDialogue ?? EXPLORERS[active.id].greeting}
+            </span>
           </div>
         )}
       </div>

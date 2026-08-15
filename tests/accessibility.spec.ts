@@ -106,12 +106,12 @@ test('guide commands respond without continuous idle animation', async ({ page }
   await page.goto('/');
   await page.getByRole('button', { name: /Madhura, sweet/i }).first().click();
   await page.getByRole('button', { name: /Scout/i }).click();
-  await expect(page.getByText(/I found jaggery/i)).toBeVisible();
-  await page.waitForTimeout(1100);
-  const runningGuideAnimations = await page.locator('.tm-zone[data-selected="true"] .taste-guide__library-character').evaluate((element) =>
-    element.getAnimations().filter((animation) => animation.playState === 'running').length,
-  );
-  expect(runningGuideAnimations).toBe(0);
+  await expect(page.locator('.tm-zone[data-selected="true"] .taste-guide__bubble')).toContainText(/I found jaggery/i);
+  await expect.poll(() =>
+    page.locator('.tm-zone[data-selected="true"] .taste-guide__character').evaluate((element) =>
+      element.getAnimations().filter((animation) => animation.playState === 'running').length,
+    ),
+  ).toBe(0);
 });
 
 test('manual motion control pauses decorative CSS animation', async ({ page }) => {
