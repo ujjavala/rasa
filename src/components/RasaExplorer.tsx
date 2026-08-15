@@ -107,7 +107,6 @@ export function TasteGuide({
         transition={{ duration: travelling ? 0.72 : 0.9, repeat: 0, ease: 'easeInOut' }}
       >
         <img src={AVATARS[rasaId]} alt="" draggable={false} />
-        {rasaId === 'madhura' && <span className="taste-guide__sari" />}
         {rasaId === 'katu' && <span className="taste-guide__bindi" />}
         <span className="taste-guide__tool" title={explorer.epithet}>{GUIDE_TOOLS[rasaId]}</span>
       </motion.span>

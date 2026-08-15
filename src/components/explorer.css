@@ -67,36 +67,6 @@
   font-size: clamp(8px, 1.3vw, 14px);
 }
 
-/* Guddi's sari accent adds pleats, a gold border and a compact pallu. */
-.taste-guide__sari {
-  position: absolute;
-  left: 18%;
-  right: 7%;
-  bottom: -3%;
-  z-index: 1;
-  height: 38%;
-  border-bottom: 3px solid #e9bd58;
-  border-radius: 55% 18% 10% 12%;
-  background:
-    linear-gradient(74deg, transparent 0 25%, rgb(255 239 185 / .55) 26% 28%, transparent 29% 44%, rgb(255 239 185 / .45) 45% 47%, transparent 48%),
-    linear-gradient(145deg, #8d1836, #d04b54 56%, #6e112b);
-  box-shadow: inset 5px 0 0 rgb(255 215 113 / .3);
-  transform: skewX(-7deg) rotate(-2deg);
-}
-
-.taste-guide__sari::after {
-  content: '';
-  position: absolute;
-  left: -11%;
-  top: -58%;
-  width: 19%;
-  height: 104%;
-  border-radius: 99px 99px 8px 8px;
-  background: linear-gradient(90deg, #6e112b, #c83e4d 65%, #e9bd58 66% 77%, #8d1836 78%);
-  transform: rotate(-28deg);
-  transform-origin: 50% 100%;
-}
-
 .taste-guide__bindi {
   position: absolute;
   left: 49%;
